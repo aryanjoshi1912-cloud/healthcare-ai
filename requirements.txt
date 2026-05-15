@@ -1,0 +1,14 @@
+streamlit==1.37.1
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.1
+joblib==1.4.2
+plotly==5.23.0
+reportlab==4.2.2
+requests==2.32.3
+langchain==0.2.14
+langchain-text-splitters==0.2.2
+langchain-community==0.2.12
+chromadb==0.5.5
+sentence-transformers==3.0.1
+pypdf==4.3.1

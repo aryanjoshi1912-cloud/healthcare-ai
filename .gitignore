@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.streamlit/secrets.toml
+models/*.pkl
+database/*.db
+rag/vector_db/
+*.log
