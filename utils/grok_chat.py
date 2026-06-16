@@ -39,13 +39,14 @@ def ask_grok(prompt: str, context: str = "", history: list[dict] | None = None) 
         )
 
     model = get_model_name()
-    system = (
+    system_prompt = (
         "You are MediMind AI, a careful medical education assistant. "
         "Give clear, non-diagnostic guidance, mention red flags, and advise professional care when appropriate."
     )
-    messages = [{"role": "system", "content": system}]
     if context:
-        messages.append({"role": "system", "content": f"Use this retrieved medical context when useful:\n{context}"})
+        system_prompt += f"\n\nUse this retrieved medical context when useful:\n{context}"
+
+    messages = [{"role": "system", "content": system_prompt}]
     
     for item in history or []:
         if item.get("role") in {"user", "assistant"}:
@@ -75,8 +76,12 @@ def ask_grok(prompt: str, context: str = "", history: list[dict] | None = None) 
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"].strip()
     except requests.RequestException as e:
+        detail = ""
+        if e.response is not None:
+            detail = f" | Details: {e.response.text}"
         return (
-            f"Error communicating with Grok API: {e}. "
+            f"Error communicating with Grok API: {e}{detail}. "
             "Demo guidance: monitor symptoms, hydrate, rest, "
             "and seek urgent care for chest pain, trouble breathing, confusion, severe weakness, or symptoms that worsen quickly."
         )
+
