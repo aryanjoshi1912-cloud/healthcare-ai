@@ -85,17 +85,20 @@ def ask_grok(prompt: str, context: str = "", history: list[dict] | None = None) 
                     models_response = requests.get(
                         f"{XAI_API_URL}/models",
                         headers={"Authorization": f"Bearer {api_key}"},
-                        timeout=5
+                        timeout=10
                     )
                     if models_response.status_code == 200:
                         model_names = [m["id"] for m in models_response.json().get("data", [])]
                         available_models_info = f" | Available models for your key: {', '.join(model_names)}"
-                except Exception:
-                    pass
+                    else:
+                        available_models_info = f" | Failed listing models (HTTP {models_response.status_code}): {models_response.text}"
+                except Exception as ex:
+                    available_models_info = f" | Failed listing models error: {ex}"
         return (
             f"Error communicating with Grok API: {e}{detail}{available_models_info}. "
             "Demo guidance: monitor symptoms, hydrate, rest, "
             "and seek urgent care for chest pain, trouble breathing, confusion, severe weakness, or symptoms that worsen quickly."
         )
+
 
 
