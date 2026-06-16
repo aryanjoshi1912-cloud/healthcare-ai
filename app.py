@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import sys
+# Conditional patch to bypass older sqlite3 version on Streamlit Cloud (Linux)
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 from database.db_handler import get_chat_history, get_diagnoses, init_db, save_chat, save_diagnosis
-from utils.ollama_chat import ask_ollama, get_model_name
+from utils.grok_chat import ask_grok, get_model_name
 from utils.prediction import predict_disease
 from utils.rag_pipeline import build_vector_store, retrieve_context
 from utils.report_generator import generate_report
@@ -158,7 +166,7 @@ st.markdown(
     <div class="topbar">
       <div class="topbar-inner">
         <div class="brand"><div class="brand-mark"><span>+</span></div><span>MEDIMIND</span></div>
-        <div class="nav-status">AI healthcare diagnosis system<br>Ollama model: {get_model_name()}</div>
+        <div class="nav-status">AI healthcare diagnosis system<br>Grok model: {get_model_name()}</div>
       </div>
     </div>
     """,
@@ -181,7 +189,7 @@ def page_home() -> None:
         st.markdown('<p class="eyebrow">MediMind AI</p>', unsafe_allow_html=True)
         st.title("Best AI Medical Guidance For Early Symptom Awareness")
         st.write(
-            "Check symptoms, talk to a local Ollama assistant, search your medical PDFs, save diagnosis history, "
+            "Check symptoms, talk to a Grok AI assistant, search your medical PDFs, save diagnosis history, "
             "and generate clean PDF summaries from one Streamlit dashboard."
         )
         c1, c2, c3 = st.columns(3)
@@ -197,7 +205,7 @@ def page_home() -> None:
     cols = st.columns(4)
     items = [
         ("Disease Prediction", "Random Forest + TF-IDF with confidence and urgency."),
-        ("AI Chatbot", "Local Ollama replies using llama3.2:1b when available."),
+        ("AI Chatbot", "Grok replies using the xAI Grok API."),
         ("RAG Knowledge", "Index PDFs with ChromaDB and retrieve medical context."),
         ("Reports", "Download educational PDF summaries with precautions."),
     ]
@@ -228,7 +236,7 @@ def page_about() -> None:
         )
         c1, c2, c3, c4 = st.columns(4)
         c1.markdown('<div class="info-card"><div class="number">ML</div><b>Random Forest</b></div>', unsafe_allow_html=True)
-        c2.markdown('<div class="info-card"><div class="number">AI</div><b>Ollama</b></div>', unsafe_allow_html=True)
+        c2.markdown('<div class="info-card"><div class="number">AI</div><b>Grok</b></div>', unsafe_allow_html=True)
         c3.markdown('<div class="info-card"><div class="number">DB</div><b>SQLite</b></div>', unsafe_allow_html=True)
         c4.markdown('<div class="info-card"><div class="number">PDF</div><b>Reports</b></div>', unsafe_allow_html=True)
 
@@ -240,7 +248,7 @@ def page_services() -> None:
     services = [
         ("01", "Symptom Checker", "Interactive symptom entry with confidence and urgency levels."),
         ("02", "Disease Prediction", "Random Forest model trained on Kaggle symptom-to-disease data."),
-        ("03", "AI Chatbot", "Local Ollama replies using low-RAM llama3.2:1b support."),
+        ("03", "AI Chatbot", "Replies powered by the xAI Grok API."),
         ("04", "Medical RAG", "PDF upload, chunking, embeddings, ChromaDB storage, and retrieval."),
         ("05", "Diagnosis History", "SQLite persistence for previous checks and conversations."),
         ("06", "Analytics Dashboard", "Plotly charts for conditions, confidence, and usage trends."),
@@ -300,7 +308,7 @@ def page_chatbot() -> None:
     if prompt:
         save_chat("user", prompt)
         context = retrieve_context(prompt)
-        answer = ask_ollama(prompt, context=context, history=history[-8:])
+        answer = ask_grok(prompt, context=context, history=history[-8:])
         save_chat("assistant", answer)
         st.rerun()
 
@@ -350,7 +358,7 @@ def page_contact() -> None:
             """
             <div class="info-card">
             <h3>Project Stack</h3>
-            <p>Streamlit, Scikit-learn, Ollama, LangChain, ChromaDB, SQLite, Plotly, ReportLab, Pandas, and NumPy.</p>
+            <p>Streamlit, Scikit-learn, Grok API, LangChain, ChromaDB, SQLite, Plotly, ReportLab, Pandas, and NumPy.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -359,7 +367,7 @@ def page_contact() -> None:
         with st.form("contact_form"):
             name = st.text_input("Your name")
             email = st.text_input("Email address")
-            topic = st.selectbox("Topic", ["Project demo", "Dataset setup", "Ollama support", "RAG pipeline"])
+            topic = st.selectbox("Topic", ["Project demo", "Dataset setup", "Grok support", "RAG pipeline"])
             message = st.text_area("Message")
             sent = st.form_submit_button("Send Message", type="primary")
         if sent:

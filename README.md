@@ -1,6 +1,6 @@
 # MediMind AI - Healthcare Diagnosis & Recommendation System
 
-MediMind AI is a merged Streamlit healthcare assistant that combines the Medinova-style medical UI with symptom prediction, local Ollama chat, PDF knowledge retrieval, SQLite history, analytics, and downloadable medical summary reports.
+MediMind AI is a merged Streamlit healthcare assistant that combines the Medinova-style medical UI with symptom prediction, xAI Grok API chatbot, PDF knowledge retrieval, SQLite history, analytics, and downloadable medical summary reports.
 
 ## Features
 
@@ -9,7 +9,7 @@ MediMind AI is a merged Streamlit healthcare assistant that combines the Medinov
 - Session-state navigation using `st.session_state.active_page` and top navigation buttons
 - Disease prediction with Random Forest + TF-IDF after training
 - Demo prediction fallback when model files are not available
-- Local Ollama integration, optimized for `llama3.2:1b`
+- Chatbot integration powered by the xAI Grok API (configured with `grok-2-1212`)
 - LangChain + ChromaDB RAG pipeline for medical PDFs
 - SQLite diagnosis and chat history
 - Plotly analytics
@@ -48,16 +48,23 @@ This creates:
 - `models/tfidf_vectorizer.pkl`
 - `models/label_encoder.pkl`
 
-## Ollama
+## Grok API Setup
 
-Install Ollama, pull a low-RAM model, and keep Ollama running:
+To use the AI Chatbot feature, you need an API key from xAI.
+
+1. Create an account at the [xAI Console](https://console.x.ai/) and generate an API key.
+2. Set the `XAI_API_KEY` environment variable before running the application:
 
 ```powershell
-ollama pull llama3.2:1b
-ollama serve
-```
+# PowerShell (Windows)
+$env:XAI_API_KEY="your-api-key-here"
 
-The app auto-detects installed models and falls back to `llama3.2:1b`.
+# CMD (Windows)
+set XAI_API_KEY=your-api-key-here
+
+# Bash (Linux/macOS)
+export XAI_API_KEY="your-api-key-here"
+```
 
 ## RAG PDFs
 
