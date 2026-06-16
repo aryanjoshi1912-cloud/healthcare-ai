@@ -5,7 +5,7 @@ import requests
 import streamlit as st
 
 XAI_API_URL = "https://api.x.ai/v1"
-DEFAULT_MODEL = "grok-2-1212"
+DEFAULT_MODEL = "grok-beta"
 
 
 def get_api_key() -> str | None:
@@ -21,7 +21,7 @@ def get_api_key() -> str | None:
 
 
 def get_model_name() -> str:
-    # We can default to the stable grok-2-1212 model, or let users customize it
+    # We can default to the stable grok-beta model, or let users customize it
     try:
         if "XAI_MODEL" in st.secrets:
             return st.secrets["XAI_MODEL"]
@@ -77,11 +77,25 @@ def ask_grok(prompt: str, context: str = "", history: list[dict] | None = None) 
         return response.json()["choices"][0]["message"]["content"].strip()
     except requests.RequestException as e:
         detail = ""
+        available_models_info = ""
         if e.response is not None:
             detail = f" | Details: {e.response.text}"
+            if "Model not found" in e.response.text or "invalid-argument" in e.response.text:
+                try:
+                    models_response = requests.get(
+                        f"{XAI_API_URL}/models",
+                        headers={"Authorization": f"Bearer {api_key}"},
+                        timeout=5
+                    )
+                    if models_response.status_code == 200:
+                        model_names = [m["id"] for m in models_response.json().get("data", [])]
+                        available_models_info = f" | Available models for your key: {', '.join(model_names)}"
+                except Exception:
+                    pass
         return (
-            f"Error communicating with Grok API: {e}{detail}. "
+            f"Error communicating with Grok API: {e}{detail}{available_models_info}. "
             "Demo guidance: monitor symptoms, hydrate, rest, "
             "and seek urgent care for chest pain, trouble breathing, confusion, severe weakness, or symptoms that worsen quickly."
         )
+
 
